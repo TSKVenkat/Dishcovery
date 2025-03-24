@@ -19,7 +19,7 @@ export const signUpAction = async (formData: FormData) => {
     );
   }
 
-  const { error } = await supabase.auth.signUp({
+  const { data,error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -30,13 +30,19 @@ export const signUpAction = async (formData: FormData) => {
   if (error) {
     console.error(error.code + " " + error.message);
     return encodedRedirect("error", "/sign-up", error.message);
-  } else {
-    return encodedRedirect(
+  }  
+  
+  const userId = data?.user?.id;  
+  if (userId) {
+    
+    await supabase.from("user_profiles").insert([{ user_id: userId, form_submitted: false }]);
+  }
+  return encodedRedirect(
       "success",
-      "/sign-up",
+      "/sign-in",
       "Thanks for signing up! Please check your email for a verification link.",
     );
-  }
+  
 };
 
 export const signInAction = async (formData: FormData) => {
@@ -51,6 +57,20 @@ export const signInAction = async (formData: FormData) => {
 
   if (error) {
     return encodedRedirect("error", "/sign-in", error.message);
+  }
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData?.user) {
+    return encodedRedirect("error", "/sign-in", "User not found");
+  }
+
+  const userId = userData.user.id;
+  const {data:selectdata,error:selecterror}=await supabase.from("user_profiles").select("form_submitted").eq("user_id", userId).single();
+  if(selecterror){
+    return encodedRedirect("error", "/sign-in", "Error fetching user profile")
+  }
+  if(!selectdata?.form_submitted){
+    return encodedRedirect("success", "/protected/form", "Please fill in the following form details")
+
   }
 
   return redirect("/protected");
@@ -132,3 +152,50 @@ export const signOutAction = async () => {
   await supabase.auth.signOut();
   return redirect("/sign-in");
 };
+
+
+export const handleFormSubmit=async(form:Record<string,string>)=>{
+  const supabase = await createClient();
+
+
+  const formDataString = `Age: ${form.age}, Gender: ${form.gender}, Pregnancy Status: ${form.pregnancyStatus}, 
+  Diet Preferences: ${form.dietPreferences}, Specific Diet: ${form.specificDiet}, 
+  Fitness Goals: ${form.fitnessGoals}, Additional Info: ${form.additionalInfo || "None"}`;
+
+  const {data,error}= await supabase.auth.getUser();
+  if (error||!data?.user){
+    console.log("Error with user session");
+    return {error};
+  }
+  const userid=data.user.id;
+  const {error: upserterror } = await supabase
+  .from("user_profiles")
+  .upsert([
+    {
+      user_id: userid, 
+      about: formDataString, 
+    },
+  ], { onConflict: "user_id" });
+
+  if (upserterror) {
+    console.error("Error upserting data:", upserterror);
+    return{error:upserterror}
+  } else {
+    const {error:updateError}=await supabase.from("user_profiles").update({ form_submitted: true }).eq("user_id", userid);
+
+    if(updateError){
+      console.error("Error updating form submission status:", updateError);
+      return { error: updateError };
+    }else{
+      encodedRedirect("success","/protected","Your details have successfully been stored")
+
+      
+    }
+
+
+  }
+};
+
+
+
+
