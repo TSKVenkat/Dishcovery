@@ -3,7 +3,7 @@ import { useState, useRef, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Camera, Upload } from 'lucide-react';
 import { Item } from '@/types';
-import SimpleWebcam from './SimpleWebcam';
+import SimpleNativeCamera from './SimpleNativeCamera';
 
 interface AddItemModalProps {
   onClose: () => void;
@@ -271,7 +271,7 @@ export default function AddItemModal({ onClose, onItemAdded }: AddItemModalProps
                   </div>
                 ) : (
                   <div>
-                    <SimpleWebcam onCaptureAction={handleCapture} />
+                    <SimpleNativeCamera onCaptureAction={handleCapture} />
                     
                     {/* Drag and drop area */}
                     <div 

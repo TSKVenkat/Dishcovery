@@ -4,9 +4,7 @@ const nextConfig = {
   images: {
     domains: [],
     unoptimized: false
-  },
-  // Ensure proper handling of react-webcam and other external libraries
-  transpilePackages: ['react-webcam']
+  }
 };
 
 module.exports = nextConfig; 
