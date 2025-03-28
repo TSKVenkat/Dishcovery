@@ -3,16 +3,19 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 
-// Dynamically import the Webcam component with no SSR to avoid hydration issues
-const Webcam = dynamic(() => import('react-webcam'), { 
-  ssr: false,
-  loading: () => (
-    <div className="flex flex-col items-center p-8 text-center">
-      <div className="w-10 h-10 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
-      <p className="mt-4 text-gray-600 font-medium">Loading camera...</p>
-    </div>
-  ) 
-});
+// Correct implementation of dynamic import with proper type handling
+const Webcam = dynamic(
+  () => import('react-webcam').then((mod) => mod.default),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex flex-col items-center p-8 text-center">
+        <div className="w-10 h-10 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+        <p className="mt-4 text-gray-600 font-medium">Loading camera...</p>
+      </div>
+    ) 
+  }
+);
 
 interface WebcamCaptureProps {
   onCaptureAction: (imageSrc: string) => void;
