@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/client';
 import { Camera, Upload } from 'lucide-react';
 import { Item } from '@/types';
 import WebcamCapture from './WebcamCapture';
+import SimpleWebcam from './SimpleWebcam';
 
 interface AddItemModalProps {
   onClose: () => void;
@@ -271,7 +272,7 @@ export default function AddItemModal({ onClose, onItemAdded }: AddItemModalProps
                   </div>
                 ) : (
                   <div>
-                    <WebcamCapture onCaptureAction={handleCapture} />
+                    <SimpleWebcam onCaptureAction={handleCapture} />
                     
                     {/* Drag and drop area */}
                     <div 
