@@ -1,69 +1,187 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&family=Lato:wght@300;400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --radius: 0.5rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-  }
+:root {
+  /* Color variables for our theme */
+  --primary-50: #f0fdf4;
+  --primary-100: #dcfce7;
+  --primary-200: #bbf7d0;
+  --primary-300: #86efac;
+  --primary-400: #4ade80;
+  --primary-500: #22c55e;
+  --primary-600: #16a34a;
+  --primary-700: #15803d;
+  --primary-800: #166534;
+  --primary-900: #14532d;
 
-  .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-  }
+  --secondary-500: #f97316;
+  --accent-500: #ef4444;
+
+  --neutral-50: #f9fafb;
+  --neutral-100: #f3f4f6;
+  --neutral-200: #e5e7eb;
+  --neutral-300: #d1d5db;
+  --neutral-500: #6b7280;
+  --neutral-700: #374151;
+  --neutral-900: #111827;
+
+  /* Functional colors */
+  --success: #16a34a;
+  --warning: #eab308;
+  --error: #dc2626;
+  --info: #0284c7;
+
+  /* UI Colors */
+  --background: var(--neutral-50);
+  --card-background: #ffffff;
+  --foreground: var(--neutral-900);
+  --muted: var(--neutral-200);
+}
+
+.dark {
+  --background: var(--neutral-900);
+  --card-background: var(--neutral-800);
+  --foreground: var(--neutral-50);
+  --muted: var(--neutral-700);
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-neutral-200 dark:border-neutral-700;
   }
+  
   body {
-    @apply bg-background text-foreground;
+    font-family: 'Lato', system-ui, sans-serif;
+    @apply bg-background text-foreground transition-colors duration-300;
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Oswald', 'Poppins', system-ui, sans-serif;
+    @apply font-medium tracking-tight;
+  }
+
+  h1 {
+    @apply text-4xl sm:text-5xl;
+  }
+
+  h2 {
+    @apply text-3xl sm:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl sm:text-3xl;
+  }
+
+  h4 {
+    @apply text-xl sm:text-2xl;
+  }
+
+  input, textarea, select {
+    @apply rounded-lg border-neutral-300 dark:border-neutral-600 bg-card-background;
+    @apply focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
+    @apply dark:bg-neutral-800 dark:text-neutral-100;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 
+           text-sm font-medium transition-colors duration-300
+           focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply bg-primary-500 text-white hover:bg-primary-600 
+           focus:ring-primary-500;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary-500 text-white hover:bg-secondary-600 
+           focus:ring-secondary-500;
+  }
+
+  .btn-accent {
+    @apply bg-accent-500 text-white hover:bg-accent-600 
+           focus:ring-accent-500;
+  }
+
+  .btn-outline {
+    @apply border border-neutral-300 bg-transparent text-foreground 
+           hover:bg-neutral-100 dark:border-neutral-600 
+           dark:hover:bg-neutral-800;
+  }
+
+  .card {
+    @apply rounded-xl bg-card-background p-6 shadow-md;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1;
+  }
+
+  .form-input {
+    @apply block w-full rounded-lg border-gray-300 dark:border-gray-600 
+           bg-white dark:bg-gray-800 px-3 py-2 shadow-sm 
+           focus:border-primary-500 focus:ring-primary-500;
+  }
+
+  /* Food app specific components */
+  .food-item-card {
+    @apply rounded-lg bg-white dark:bg-neutral-800 overflow-hidden shadow-md 
+           hover:shadow-lg transition-shadow duration-300;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .badge-expiring-soon {
+    @apply bg-amber-100 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400;
+  }
+
+  .badge-expired {
+    @apply bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400;
+  }
+
+  .badge-fresh {
+    @apply bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400;
+  }
+}
+
+/* Custom animations */
+@keyframes pulse-gentle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-pulse-gentle {
+  animation: pulse-gentle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Mobile-friendly adjustments */
+@media (max-width: 640px) {
+  .card {
+    @apply p-4;
+  }
+  
+  body {
+    @apply text-sm;
+  }
+}
+
+/* Accessibility improvements */
+:focus {
+  @apply outline-none ring-2 ring-primary-500;
+}
+
+/* Transitions for smooth theme switching */
+.transition-theme {
+  @apply transition-all duration-300 ease-in-out;
 }

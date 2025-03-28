@@ -1,7 +1,7 @@
 // components/AddItemModal.tsx
 import { useState, useRef, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { Camera, Upload } from 'lucide-react';
+import { Camera, Upload, X, AlertCircle } from 'lucide-react';
 import { Item } from '@/types';
 import SimpleNativeCamera from './SimpleNativeCamera';
 
@@ -80,20 +80,16 @@ export default function AddItemModal({ onClose, onItemAdded }: AddItemModalProps
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!isDragging) {
-      setIsDragging(true);
-    }
-  }, [isDragging]);
+    setIsDragging(true);
+  }, []);
   
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
     
-    const dt = e.dataTransfer;
-    const file = dt.files?.[0];
-    
-    if (file) {
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
       handleFile(file);
     }
   }, []);
@@ -101,36 +97,48 @@ export default function AddItemModal({ onClose, onItemAdded }: AddItemModalProps
   const processImage = async (imageSrc: string) => {
     try {
       setError(null);
-      setIsProcessing(true);
       
-      // Send image to AI API for processing
+      // Extract the base64 part of the data URL
+      const base64Data = imageSrc.split(',')[1];
+      
       const response = await fetch('/api/process-food-image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ image: imageSrc }),
+        body: JSON.stringify({ image: base64Data }),
       });
-
+      
       const data = await response.json();
-
+      
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to process image');
+        if (data.error) {
+          setCapturedImage(null); // Reset the image when food cannot be identified
+          throw new Error(data.error);
+        } else {
+          throw new Error('Failed to process the image');
+        }
       }
       
-      // Check if AI reported NOT_FOOD
-      if (data.itemName === "NOT_FOOD" || data.error) {
+      // Check if the API returned an error message
+      if (data.error) {
         setCapturedImage(null);
-        throw new Error(data.error || "Could not identify any food in this image. Please try another photo of a food item.");
+        throw new Error(data.error);
       }
-            
-      // Set the detected food item name and proceed to next step
-      setItemName(data.itemName || '');
+      
+      // If we got here, we have successfully identified a food item
+      setItemName(data.name || '');
+      setAbout(data.description || '');
+      
+      // Calculate a default expiry date (7 days from today)
+      const defaultExpiryDate = new Date();
+      defaultExpiryDate.setDate(defaultExpiryDate.getDate() + 7);
+      setExpiryDate(defaultExpiryDate.toISOString().split('T')[0]);
+      
       setStep(AddItemStep.CONFIRM_DETAILS);
     } catch (err) {
-      setCapturedImage(null);
-      setError(err instanceof Error ? err.message : 'Failed to process image');
       console.error('Error processing image:', err);
+      setError(err instanceof Error ? err.message : 'Failed to process the image');
     } finally {
       setIsProcessing(false);
     }
@@ -179,11 +187,7 @@ export default function AddItemModal({ onClose, onItemAdded }: AddItemModalProps
         <div className="my-6 p-6 bg-red-50 border border-red-200 rounded-lg shadow-sm">
           <div className="flex items-start">
             <div className="mr-3 text-red-500 flex-shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-              </svg>
+              <AlertCircle size={24} />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-medium text-red-800 mb-1">Cannot Identify Food</h3>
@@ -197,7 +201,7 @@ export default function AddItemModal({ onClose, onItemAdded }: AddItemModalProps
                 </ul>
                 <button
                   onClick={() => setError(null)}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
                 >
                   Try Again
                 </button>
@@ -212,28 +216,25 @@ export default function AddItemModal({ onClose, onItemAdded }: AddItemModalProps
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-neutral-900 rounded-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto shadow-xl">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-neutral-800 dark:text-neutral-100">
             {step === AddItemStep.CAPTURE_IMAGE ? 'Add Food Item' : 'Confirm Item Details'}
           </h2>
           <button 
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-xl font-bold"
+            className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            aria-label="Close"
           >
-            &times;
+            <X size={20} />
           </button>
         </div>
 
         {error && !error.includes("person") && !error.includes("food") && (
-          <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded mb-4 flex items-start">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg mb-4 flex items-start">
             <div className="mr-2 mt-0.5">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-              </svg>
+              <AlertCircle size={18} />
             </div>
             <div>{error}</div>
           </div>
@@ -242,31 +243,31 @@ export default function AddItemModal({ onClose, onItemAdded }: AddItemModalProps
         {step === AddItemStep.CAPTURE_IMAGE ? (
           <div>
             {error && (error.includes("person") || error.includes("food")) ? (
-              // Show only the error message when food cannot be identified
               renderNonFoodErrorMessage()
             ) : (
               <div className="mb-4">
-                <p className="mb-2">Take a photo of your food item or upload an image</p>
+                <p className="mb-4 text-neutral-600 dark:text-neutral-300">Take a photo of your food item or upload an image</p>
                 
                 {capturedImage && !isProcessing ? (
                   <div className="relative">
                     <img 
                       src={capturedImage} 
                       alt="Captured food item" 
-                      className="w-full h-64 object-cover rounded-lg"
+                      className="w-full h-64 object-cover rounded-lg border border-neutral-200 dark:border-neutral-700"
                     />
                     <button
                       onClick={() => setCapturedImage(null)}
-                      className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full"
+                      className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-full hover:bg-red-700 transition-colors"
+                      aria-label="Remove image"
                     >
-                      &times;
+                      <X size={16} />
                     </button>
                   </div>
                 ) : isProcessing ? (
-                  <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <div>
-                      <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-                      <p className="mt-2">Processing image...</p>
+                  <div className="w-full h-64 bg-neutral-100 dark:bg-neutral-800 rounded-lg flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary-600 border-r-transparent"></div>
+                      <p className="mt-3 text-neutral-600 dark:text-neutral-300">Processing image...</p>
                     </div>
                   </div>
                 ) : (
@@ -276,7 +277,11 @@ export default function AddItemModal({ onClose, onItemAdded }: AddItemModalProps
                     {/* Drag and drop area */}
                     <div 
                       ref={dropAreaRef}
-                      className={`mt-6 border-2 ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'} border-dashed rounded-lg p-6 transition-colors duration-200 ease-in-out cursor-pointer`}
+                      className={`mt-6 border-2 ${
+                        isDragging 
+                          ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' 
+                          : 'border-neutral-300 dark:border-neutral-700 hover:border-primary-400 dark:hover:border-primary-600'
+                      } border-dashed rounded-lg p-6 transition-colors duration-200 ease-in-out cursor-pointer`}
                       onDragEnter={handleDragEnter}
                       onDragOver={handleDragOver}
                       onDragLeave={handleDragLeave}
@@ -284,11 +289,15 @@ export default function AddItemModal({ onClose, onItemAdded }: AddItemModalProps
                       onClick={() => fileInputRef.current?.click()}
                     >
                       <div className="flex flex-col items-center">
-                        <Upload size={36} className={`${isDragging ? 'text-blue-500' : 'text-gray-400'} mb-3`} />
-                        <h3 className={`text-lg font-medium ${isDragging ? 'text-blue-700' : 'text-gray-700'} mb-2`}>
+                        <Upload size={36} className={`${
+                          isDragging ? 'text-primary-500' : 'text-neutral-400 dark:text-neutral-500'
+                        } mb-3`} />
+                        <h3 className={`text-lg font-medium ${
+                          isDragging ? 'text-primary-700 dark:text-primary-400' : 'text-neutral-700 dark:text-neutral-300'
+                        } mb-2`}>
                           {isDragging ? 'Drop to Upload' : 'Upload Image'}
                         </h3>
-                        <p className="text-gray-500 text-sm text-center mb-2">
+                        <p className="text-neutral-500 dark:text-neutral-400 text-sm text-center mb-2">
                           Drag & drop an image here or click to browse
                         </p>
                         <input
@@ -307,51 +316,51 @@ export default function AddItemModal({ onClose, onItemAdded }: AddItemModalProps
           </div>
         ) : (
           <div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Item Name</label>
+            <div className="mb-5">
+              <label className="block text-neutral-700 dark:text-neutral-300 mb-2 font-medium">Item Name</label>
               <div className="flex">
                 <input
                   type="text"
                   value={itemName}
                   onChange={(e) => setItemName(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  className="w-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-neutral-200"
                   placeholder="Enter food item name"
                 />
               </div>
             </div>
             
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Expiry Date</label>
+            <div className="mb-5">
+              <label className="block text-neutral-700 dark:text-neutral-300 mb-2 font-medium">Expiry Date</label>
               <input
                 type="date"
                 value={expiryDate}
                 onChange={(e) => setExpiryDate(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                className="w-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-neutral-200"
                 required
               />
             </div>
             
             <div className="mb-6">
-              <label className="block text-gray-700 mb-2">Notes (Optional)</label>
+              <label className="block text-neutral-700 dark:text-neutral-300 mb-2 font-medium">Notes (Optional)</label>
               <textarea
                 value={about}
                 onChange={(e) => setAbout(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                className="w-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-neutral-200"
                 rows={3}
                 placeholder="Add any additional information about this item"
               />
             </div>
 
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-3 mt-8">
               <button
                 onClick={() => setStep(AddItemStep.CAPTURE_IMAGE)}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+                className="px-4 py-2.5 bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors font-medium"
               >
                 Back
               </button>
               <button
                 onClick={handleSave}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                className="px-4 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
               >
                 Save Item
               </button>

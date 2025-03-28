@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import { AlertCircle, RefreshCw, Camera, X } from 'lucide-react';
 
 interface SimpleNativeCameraProps {
   onCaptureAction: (imageSrc: string) => void;
@@ -141,32 +142,31 @@ export default function SimpleNativeCamera({ onCaptureAction }: SimpleNativeCame
 
   return (
     <div className="w-full">
-      <div className="relative w-full h-80 bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-300">
+      <div className="relative w-full h-80 bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 shadow-sm">
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
+          <div className="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 z-10">
             <div className="flex flex-col items-center">
-              <div className="w-10 h-10 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
-              <p className="mt-4 text-gray-600 font-medium">Loading camera...</p>
+              <div className="w-10 h-10 border-4 border-neutral-300 dark:border-neutral-600 border-t-primary-600 rounded-full animate-spin"></div>
+              <p className="mt-4 text-neutral-600 dark:text-neutral-300 font-medium">Loading camera...</p>
             </div>
           </div>
         )}
         
         {error ? (
           <div className="flex flex-col items-center text-center px-8 py-6 h-full justify-center">
-            <div className="text-red-500 mb-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-              </svg>
+            <div className="text-red-500 dark:text-red-400 mb-3">
+              <AlertCircle size={48} />
             </div>
-            <p className="text-red-600 font-medium text-lg">Camera Error</p>
-            <p className="mt-2 text-gray-600">{error}</p>
+            <p className="text-red-600 dark:text-red-400 font-medium text-lg">Camera Error</p>
+            <p className="mt-2 text-neutral-600 dark:text-neutral-400">{error}</p>
             <button 
               onClick={retry}
-              className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="mt-5 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors font-medium"
             >
-              Try Again
+              <span className="flex items-center">
+                <RefreshCw size={16} className="mr-2" />
+                Try Again
+              </span>
             </button>
           </div>
         ) : (
@@ -188,7 +188,8 @@ export default function SimpleNativeCamera({ onCaptureAction }: SimpleNativeCame
             {cameraActive && !isLoading && (
               <>
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-20"></div>
-                <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
+                <div className="absolute top-3 left-3 bg-black/50 text-white px-2.5 py-1.5 rounded-full text-xs font-medium flex items-center">
+                  <Camera size={14} className="mr-1.5" />
                   Camera Active
                 </div>
                 
@@ -196,7 +197,7 @@ export default function SimpleNativeCamera({ onCaptureAction }: SimpleNativeCame
                 <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-4">
                   <button
                     onClick={capturePhoto}
-                    className="bg-white text-black p-4 rounded-full shadow-lg hover:bg-gray-100 transition-colors"
+                    className="bg-white text-black p-4 rounded-full shadow-lg hover:bg-neutral-100 transition-colors"
                     aria-label="Take photo"
                   >
                     <div className="w-6 h-6 border-2 border-black rounded-full"></div>
@@ -204,25 +205,18 @@ export default function SimpleNativeCamera({ onCaptureAction }: SimpleNativeCame
                   
                   <button
                     onClick={switchCamera}
-                    className="bg-gray-500 text-white p-3 rounded-full shadow-lg hover:bg-gray-600 transition-colors"
+                    className="bg-neutral-700 hover:bg-neutral-600 text-white p-3 rounded-full shadow-lg transition-colors"
                     aria-label="Switch camera"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M15 15 L19 19 L15 23"></path>
-                      <path d="M5 15 L1 19 L5 23"></path>
-                      <path d="M19 19 L5 19"></path>
-                    </svg>
+                    <RefreshCw size={20} />
                   </button>
                   
                   <button
                     onClick={stopCamera}
-                    className="bg-blue-500 text-white p-3 rounded-full shadow-lg hover:bg-blue-600 transition-colors"
+                    className="bg-red-600 hover:bg-red-700 text-white p-3 rounded-full shadow-lg transition-colors"
                     aria-label="Close camera"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="18" y1="6" x2="6" y2="18"></line>
-                      <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
+                    <X size={20} />
                   </button>
                 </div>
               </>

@@ -77,7 +77,7 @@ export default function RecipesPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 text-black">
+    <div className="container mx-auto px-4 py-8">
       <header className="mb-8">
         <div className="flex items-center mb-4">
           <Link href="/protected/inventory" className="flex items-center text-blue-600 hover:text-blue-800 mr-4">
