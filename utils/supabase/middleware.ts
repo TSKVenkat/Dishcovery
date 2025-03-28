@@ -37,14 +37,21 @@ export const updateSession = async (request: NextRequest) => {
 
     // This will refresh session if expired - required for Server Components
     // https://supabase.com/docs/guides/auth/server-side/nextjs
-    const user = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
 
-    // protected routes
-    if (request.nextUrl.pathname.startsWith("/protected") && user.error) {
+    // Auth-related pages should redirect to protected route if user is logged in
+    const authPages = ['/sign-in', '/sign-up', '/forgot-password'];
+    if (authPages.includes(request.nextUrl.pathname) && session) {
+      return NextResponse.redirect(new URL('/protected', request.url));
+    }
+
+    // Protected routes - redirect to sign-in if no session
+    if (request.nextUrl.pathname.startsWith("/protected") && !session) {
       return NextResponse.redirect(new URL("/sign-in", request.url));
     }
 
-    if (request.nextUrl.pathname === "/" && !user.error) {
+    // Redirect root to protected for logged in users
+    if (request.nextUrl.pathname === "/" && session) {
       return NextResponse.redirect(new URL("/protected", request.url));
     }
 

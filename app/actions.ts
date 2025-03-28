@@ -58,19 +58,23 @@ export const signInAction = async (formData: FormData) => {
   if (error) {
     return encodedRedirect("error", "/sign-in", error.message);
   }
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData?.user) {
-    return encodedRedirect("error", "/sign-in", "User not found");
+
+  // After successful login, fetch the user session to confirm authentication
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  
+  if (sessionError || !session) {
+    return encodedRedirect("error", "/sign-in", "Authentication failed");
   }
 
-  const userId = userData.user.id;
+  const userId = session.user.id;
   const {data:selectdata,error:selecterror}=await supabase.from("user_profiles").select("form_submitted").eq("user_id", userId).single();
+  
   if(selecterror){
-    return encodedRedirect("error", "/sign-in", "Error fetching user profile")
+    return encodedRedirect("error", "/sign-in", "Error fetching user profile");
   }
+  
   if(!selectdata?.form_submitted){
-    return encodedRedirect("success", "/protected/form", "Please fill in the following form details")
-
+    return redirect("/protected/form");
   }
 
   return redirect("/protected");
@@ -149,7 +153,12 @@ export const resetPasswordAction = async (formData: FormData) => {
 
 export const signOutAction = async () => {
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut();
+  
+  if (error) {
+    console.error("Error signing out:", error.message);
+  }
+  
   return redirect("/sign-in");
 };
 

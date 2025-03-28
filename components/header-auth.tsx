@@ -8,8 +8,8 @@ export default async function AuthButton() {
   const supabase = await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
   if (!hasEnvVars) {
     return (
@@ -42,7 +42,7 @@ export default async function AuthButton() {
       </>
     );
   }
-  return user ? (
+  return session ? (
     <div className="flex items-center gap-4">
       Hey, Food lover!
       <form action={signOutAction}>
