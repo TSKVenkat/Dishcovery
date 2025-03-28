@@ -3,7 +3,6 @@ import { useState, useRef, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Camera, Upload } from 'lucide-react';
 import { Item } from '@/types';
-import WebcamCapture from './WebcamCapture';
 import SimpleWebcam from './SimpleWebcam';
 
 interface AddItemModalProps {

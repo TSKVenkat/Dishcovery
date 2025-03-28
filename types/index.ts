@@ -2,7 +2,7 @@
 export interface Item {
     id: string;
     user_id: string;
-    name: string;  // Ensure this is explicitly defined
+    name: string;  // This is the field used in the database
     expiry_date: string;
     created_at: string;
     about: string | null;

@@ -2,37 +2,10 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import type Webcam from 'react-webcam';
 
-// Properly typed import with explicit WebcamProps interface
-interface WebcamProps {
-  audio: boolean;
-  ref: React.RefObject<any>;
-  screenshotFormat: "image/jpeg" | "image/png" | "image/webp";
-  videoConstraints: {
-    facingMode: string;
-    width: { ideal: number };
-    height: { ideal: number };
-  };
-  onUserMediaError: (err: Error) => void;
-  onUserMedia: () => void;
-  className: string;
-  mirrored: boolean;
-}
-
-// Dynamic import with correct type handling
-const WebcamComponent = dynamic<WebcamProps>(
-  () => import('react-webcam').then((mod) => mod.default),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex flex-col items-center p-8 text-center">
-        <div className="w-10 h-10 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
-        <p className="mt-4 text-gray-600 font-medium">Loading camera...</p>
-      </div>
-    )
-  }
-);
+// Define the Webcam component with dynamic import but no TypeScript typing
+// This approach avoids all the typing issues with react-webcam in Next.js
+const DynamicWebcam = dynamic(() => import('react-webcam'), { ssr: false });
 
 interface WebcamCaptureProps {
   onCaptureAction: (imageSrc: string) => void;
@@ -87,13 +60,6 @@ const WebcamCapture = ({ onCaptureAction }: WebcamCaptureProps) => {
       onCaptureAction("");
     }
   }, [onCaptureAction]);
-
-  // Switch between front and back cameras
-  const switchCamera = useCallback(() => {
-    setFacingMode(prevMode => 
-      prevMode === "user" ? "environment" : "user"
-    );
-  }, []);
 
   // Handle webcam errors
   const handleWebcamError = useCallback((err: Error) => {
@@ -156,7 +122,7 @@ const WebcamCapture = ({ onCaptureAction }: WebcamCaptureProps) => {
         ) : (
           <>
             {isCameraReady && (
-              <WebcamComponent
+              <DynamicWebcam
                 audio={false}
                 ref={webcamRef}
                 screenshotFormat="image/jpeg"
