@@ -109,25 +109,25 @@ export default function Inventory() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <header className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-3xl font-bold">Food Inventory</h1>
+    <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
+      <header className="mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 sm:mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold">Food Inventory</h1>
           <Link 
             href="/protected" 
-            className="flex items-center px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg border border-gray-200 shadow-sm transition-colors group"
+            className="flex items-center px-3 sm:px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg border border-gray-200 shadow-sm transition-colors group"
           >
-            <LayoutDashboard size={18} className="mr-2 text-gray-500 group-hover:text-orange-500" />
-            <span>Profile Dashboard</span>
+            <LayoutDashboard className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-gray-500 group-hover:text-orange-500" />
+            <span className="text-sm sm:text-base">Profile Dashboard</span>
           </Link>
         </div>
         
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-wrap gap-2">
             {Object.values(FilterType).map((filterType) => (
               <button
                 key={filterType}
-                className={`px-4 py-2 rounded-lg border ${
+                className={`px-3 sm:px-4 py-2 rounded-lg border text-sm sm:text-base ${
                   filter === filterType 
                     ? 'bg-blue-600 text-white' 
                     : 'bg-white text-gray-800 hover:bg-gray-100'
@@ -142,12 +142,12 @@ export default function Inventory() {
           <div className="flex gap-2">
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm sm:text-base"
             >
               Add Item
             </button>
             
-            <Link href="/protected/recipes" className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+            <Link href="/protected/recipes" className="px-3 sm:px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm sm:text-base">
               Suggest Recipes
             </Link>
           </div>
@@ -155,15 +155,15 @@ export default function Inventory() {
       </header>
 
       {error && (
-        <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded mb-4 text-sm sm:text-base">
           {error}
         </div>
       )}
 
       {isLoading ? (
         <div className="text-center py-8">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-          <p className="mt-2">Loading your inventory...</p>
+          <div className="inline-block h-6 w-6 sm:h-8 sm:w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+          <p className="mt-2 text-sm sm:text-base">Loading your inventory...</p>
         </div>
       ) : filteredItems.length > 0 ? (
         <InventoryTable 
@@ -172,8 +172,8 @@ export default function Inventory() {
           onItemDeleted={handleItemDeleted}
         />
       ) : (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <p className="text-xl text-gray-500">
+        <div className="text-center py-8 sm:py-12 bg-gray-50 rounded-lg">
+          <p className="text-base sm:text-xl text-gray-500">
             {items.length === 0 
               ? "Your inventory is empty. Add some items to get started!" 
               : "No items match the current filter."}

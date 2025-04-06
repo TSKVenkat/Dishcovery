@@ -153,80 +153,78 @@ export default function RecipesPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <header className="mb-8">
-        <div className="flex items-center mb-4">
-          <Link href="/protected/inventory" className="flex items-center text-blue-600 hover:text-blue-800 mr-4">
-            <ChevronLeft size={20} />
-            <span>Back to Inventory</span>
+    <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
+      <header className="mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4 sm:mb-6">
+          <Link href="/protected/inventory" className="flex items-center text-blue-600 hover:text-blue-800">
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-sm sm:text-base">Back to Inventory</span>
           </Link>
-          <h1 className="text-3xl font-bold">Recipe Suggestions</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Recipe Suggestions</h1>
           <Link 
             href="/protected" 
-            className="ml-auto flex items-center px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg border border-gray-200 shadow-sm transition-colors group"
+            className="flex items-center px-3 sm:px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg border border-gray-200 shadow-sm transition-colors group"
           >
-            <LayoutDashboard size={18} className="mr-2 text-gray-500 group-hover:text-orange-500" />
-            <span>Profile Dashboard</span>
+            <LayoutDashboard className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-gray-500 group-hover:text-orange-500" />
+            <span className="text-sm sm:text-base">Profile Dashboard</span>
           </Link>
         </div>
         
-        <p className="text-gray-600 mb-6">
+        <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
           Get recipe suggestions based on the ingredients in your inventory.
           We'll prioritize ingredients that are expiring soon to help reduce food waste.
         </p>
         
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <button
             onClick={getRecipeSuggestions}
             disabled={isLoading}
-            className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 flex items-center justify-center"
+            className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 flex items-center justify-center"
           >
             {isLoading ? (
               <>
-                <Loader2 size={20} className="animate-spin mr-2" />
-                Finding Recipes...
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin mr-2" />
+                <span className="text-sm sm:text-base">Finding Recipes...</span>
               </>
             ) : retryCount === 0 ? (
               <>
-                <RefreshCw size={20} className="mr-2" />
-                Get Recipe Suggestions
+                <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                <span className="text-sm sm:text-base">Get Recipe Suggestions</span>
               </>
             ) : (
               <>
-                <RefreshCw size={20} className="mr-2 hover:animate-spin" />
-                Shuffle Recipes
+                <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 mr-2 hover:animate-spin" />
+                <span className="text-sm sm:text-base">Shuffle Recipes</span>
               </>
             )}
           </button>
-          
         </div>
       </header>
       
       {error && (
-        <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded mb-4 text-sm sm:text-base">
           {error}
         </div>
       )}
       
       {message && (
-        <div className="bg-blue-100 border border-blue-300 text-blue-700 px-4 py-3 rounded mb-4">
+        <div className="bg-blue-100 border border-blue-300 text-blue-700 px-4 py-3 rounded mb-4 text-sm sm:text-base">
           {message}
         </div>
       )}
       
-      
       {recipes.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {recipes.map((recipe, index) => (
             <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-4">
-                <h2 className="text-xl font-bold text-white">{recipe.name}</h2>
+              <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-3 sm:p-4">
+                <h2 className="text-lg sm:text-xl font-bold text-white">{recipe.name}</h2>
               </div>
               
-              <div className="p-4 space-y-6">
+              <div className="p-3 sm:p-4 space-y-4 sm:space-y-6">
                 <div>
-                  <h3 className="font-medium text-gray-800 mb-3">From Your Inventory:</h3>
-                  <ul className="pl-5 list-disc text-gray-600 space-y-1">
+                  <h3 className="text-sm sm:text-base font-medium text-gray-800 mb-2 sm:mb-3">From Your Inventory:</h3>
+                  <ul className="pl-4 sm:pl-5 list-disc text-sm sm:text-base text-gray-600 space-y-1">
                     {recipe.useInventoryIngredients.map((ingredient, i) => (
                       <li key={i}>{ingredient}</li>
                     ))}
@@ -235,8 +233,8 @@ export default function RecipesPage() {
                 
                 {recipe.additionalIngredients.length > 0 && (
                   <div>
-                    <h3 className="font-medium text-gray-800 mb-3">Additional Ingredients:</h3>
-                    <ul className="pl-5 list-disc text-gray-600 space-y-2">
+                    <h3 className="text-sm sm:text-base font-medium text-gray-800 mb-2 sm:mb-3">Additional Ingredients:</h3>
+                    <ul className="pl-4 sm:pl-5 list-disc text-sm sm:text-base text-gray-600 space-y-2">
                       {recipe.additionalIngredients.map((ingredient, i) => (
                         <li key={i} className="flex items-center justify-between">
                           <span>{ingredient.name}</span>
@@ -247,7 +245,8 @@ export default function RecipesPage() {
                               rel="noopener noreferrer"
                               className="ml-2 text-blue-600 inline-flex items-center hover:text-blue-800 hover:underline"
                             >
-                              Buy Now <ExternalLink size={14} className="ml-1" />
+                              <span className="text-xs sm:text-sm">Buy Now</span>
+                              <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
                             </a>
                           )}
                         </li>
@@ -257,16 +256,16 @@ export default function RecipesPage() {
                 )}
                 
                 <div>
-                  <h3 className="font-medium text-gray-800 mb-3">Step by Step Instructions:</h3>
-                  <ol className="pl-5 list-decimal text-gray-600 space-y-3">
+                  <h3 className="text-sm sm:text-base font-medium text-gray-800 mb-2 sm:mb-3">Step by Step Instructions:</h3>
+                  <ol className="pl-4 sm:pl-5 list-decimal text-sm sm:text-base text-gray-600 space-y-2 sm:space-y-3">
                     {recipe.instructions.map((instruction, i) => (
-                      <li key={i} className="pl-2">{instruction}</li>
+                      <li key={i} className="pl-1 sm:pl-2">{instruction}</li>
                     ))}
                   </ol>
                 </div>
 
                 <div>
-                  <h3 className="font-medium text-gray-800 mb-3">Video Tutorials:</h3>
+                  <h3 className="text-sm sm:text-base font-medium text-gray-800 mb-2 sm:mb-3">Video Tutorials:</h3>
                   <div className="space-y-2">
                     {recipe.youtubeLinks.map((link, i) => (
                       <a 
@@ -274,22 +273,22 @@ export default function RecipesPage() {
                         href={link} 
                         target="_blank" 
                         rel="noopener noreferrer" 
-                        className="block bg-red-50 text-red-600 hover:bg-red-100 p-3 rounded-md transition-colors flex items-center group"
+                        className="block bg-red-50 text-red-600 hover:bg-red-100 p-2 sm:p-3 rounded-md transition-colors flex items-center group"
                       >
-                        <svg className="w-6 h-6 mr-2 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
                         </svg>
-                        Watch Tutorial {i + 1}
+                        <span className="text-xs sm:text-sm">Watch Tutorial {i + 1}</span>
                       </a>
                     ))}
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-gray-200">
+                <div className="pt-3 sm:pt-4 border-t border-gray-200">
                   <button
                     onClick={() => handleCookRecipe(recipe)}
                     disabled={!!cookingRecipe}
-                    className={`w-full px-4 py-2.5 rounded-lg flex items-center justify-center space-x-2 transition-colors ${
+                    className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg flex items-center justify-center space-x-2 transition-colors ${
                       cookingRecipe === recipe.name
                         ? 'bg-neutral-100 text-neutral-500 cursor-not-allowed'
                         : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-sm'
@@ -297,13 +296,13 @@ export default function RecipesPage() {
                   >
                     {cookingRecipe === recipe.name ? (
                       <>
-                        <Loader2 size={18} className="animate-spin" />
-                        <span className="font-medium">Processing...</span>
+                        <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                        <span className="text-sm sm:text-base font-medium">Processing...</span>
                       </>
                     ) : (
                       <>
-                        <CheckCircle size={18} className="flex-shrink-0" />
-                        <span className="font-medium">I Cooked This Recipe</span>
+                        <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                        <span className="text-sm sm:text-base font-medium">I Cooked This Recipe</span>
                       </>
                     )}
                   </button>
@@ -313,8 +312,8 @@ export default function RecipesPage() {
           ))}
         </div>
       ) : !isLoading && !message ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <p className="text-xl text-gray-500">
+        <div className="text-center py-8 sm:py-12 bg-gray-50 rounded-lg">
+          <p className="text-base sm:text-xl text-gray-500">
             Click "Shuffle Recipes" to get personalized recipe ideas based on your inventory.
           </p>
         </div>
