@@ -72,6 +72,12 @@ dishcovery/
 ├── utils/                # Utility functions
 └── public/               # Static assets
 ```
+## Links
+
+Demo Video Link (3 Minutes) : https://drive.google.com/file/d/19ajaVm9BwmMOukZDbfyvkMdko5BYgnuK/view?usp=sharing
+
+MVP Link : https://dishcovery-five.vercel.app/
+
 
 ## Contributing
 
