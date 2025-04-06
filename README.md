@@ -31,7 +31,7 @@ Dishcovery is a modern web application designed to help users discover, manage, 
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/dishcovery.git
+git clone https://github.com/TSKVenkat/Dishcovery.git
 cd dishcovery
 ```
 
