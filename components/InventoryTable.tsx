@@ -5,6 +5,25 @@ import { createClient } from '@/utils/supabase/client';
 import { Pencil, Trash2, X, Check, AlertTriangle, Clock, CalendarCheck } from 'lucide-react';
 import { Item } from '@/types';
 
+export const deleteItem = async (itemId: string) => {
+  if (!confirm('Are you sure you want to delete this item?')) return;
+  
+  try {
+    const supabase = createClient();
+    const { error: deleteError } = await supabase
+      .from('items')
+      .delete()
+      .eq('id', itemId);
+    
+    if (deleteError) throw deleteError;
+    
+    return true;
+  } catch (err) {
+    console.error('Error deleting item:', err);
+    throw err;
+  }
+};
+
 interface InventoryTableProps {
   items: Item[];
   onItemUpdated: (item: Item) => void;
@@ -16,6 +35,15 @@ export default function InventoryTable({ items, onItemUpdated, onItemDeleted }: 
   const [editFormData, setEditFormData] = useState<Partial<Item>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleDeleteItem = async (itemId: string) => {
+    try {
+      await deleteItem(itemId);
+      onItemDeleted(itemId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete item');
+    }
+  };
 
   const startEditing = (item: Item) => {
     const formattedDate = item.expiry_date 
@@ -91,30 +119,6 @@ export default function InventoryTable({ items, onItemUpdated, onItemDeleted }: 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update item');
       console.error('Error updating item:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const deleteItem = async (itemId: string) => {
-    if (!confirm('Are you sure you want to delete this item?')) return;
-    
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const supabase = createClient();
-      const { error: deleteError } = await supabase
-        .from('items')
-        .delete()
-        .eq('id', itemId);
-      
-      if (deleteError) throw deleteError;
-      
-      onItemDeleted(itemId);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete item');
-      console.error('Error deleting item:', err);
     } finally {
       setIsLoading(false);
     }
@@ -286,7 +290,7 @@ export default function InventoryTable({ items, onItemUpdated, onItemDeleted }: 
                               <Pencil size={16} />
                             </button>
                             <button
-                              onClick={() => deleteItem(item.id)}
+                              onClick={() => handleDeleteItem(item.id)}
                               className="p-1.5 bg-accent-50 text-accent-600 hover:bg-accent-100 dark:bg-accent-900/20 dark:text-accent-400 dark:hover:bg-accent-900/40 rounded transition-colors"
                               title="Delete item"
                             >

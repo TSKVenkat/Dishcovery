@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ExternalLink, Clock, Loader2, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ExternalLink, Clock, Loader2, RefreshCw, CheckCircle, LayoutDashboard } from 'lucide-react';
+import { createClient } from '@/utils/supabase/client';
+import { deleteItem } from '@/components/InventoryTable';
 
 interface RecipeIngredient {
   name: string;
@@ -30,6 +32,7 @@ export default function RecipesPage() {
   const [retryCount, setRetryCount] = useState(0);
   const [showPrompt, setShowPrompt] = useState(false);
   const [prompt, setPrompt] = useState<string | null>(null);
+  const [cookingRecipe, setCookingRecipe] = useState<string | null>(null);
 
   const getRecipeSuggestions = async () => {
     setIsLoading(true);
@@ -76,6 +79,79 @@ export default function RecipesPage() {
     }
   };
 
+  const handleCookRecipe = async (recipe: Recipe) => {
+    if (!confirm('Are you sure you want to mark this recipe as cooked? This will remove the used ingredients from your inventory.')) {
+      return;
+    }
+
+    setCookingRecipe(recipe.name);
+    setError(null);
+
+    try {
+      const supabase = createClient();
+      const { data: user } = await supabase.auth.getUser();
+      
+      if (!user.user) {
+        throw new Error('Authentication required');
+      }
+
+      // Get all items for the user
+      const { data: items, error: itemsError } = await supabase
+        .from('items')
+        .select('id, name')
+        .eq('user_id', user.user.id);
+
+      if (itemsError) throw itemsError;
+
+      // Delete each ingredient used in the recipe
+      for (const ingredient of recipe.useInventoryIngredients) {
+        const itemToDelete = items?.find(item => item.name === ingredient);
+        if (itemToDelete) {
+          await deleteItem(itemToDelete.id);
+        }
+      }
+
+      // Update successful_cooks and rank
+      const { data: userProfile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('successful_cooks')
+        .eq('user_id', user.user.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      const newCooks = (userProfile?.successful_cooks || 0) + 1;
+      let newRank = 'Newbie';
+
+      if (newCooks > 15) {
+        newRank = 'Expert Chef';
+      } else if (newCooks >= 5) {
+        newRank = 'Rookie Chef';
+      } else if (newCooks > 0) {
+        newRank = 'Amateur';
+      }
+
+      const { error: updateError } = await supabase
+        .from('user_profiles')
+        .update({
+          successful_cooks: newCooks,
+          rank: newRank
+        })
+        .eq('user_id', user.user.id);
+
+      if (updateError) throw updateError;
+
+      // Remove the cooked recipe from the list
+      setRecipes(prevRecipes => prevRecipes.filter(r => r.name !== recipe.name));
+      setMessage(`Successfully cooked ${recipe.name} and updated your chef rank!`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to remove ingredients');
+      console.error('Error removing ingredients:', err);
+    } finally {
+      setCookingRecipe(null);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <header className="mb-8">
@@ -85,6 +161,13 @@ export default function RecipesPage() {
             <span>Back to Inventory</span>
           </Link>
           <h1 className="text-3xl font-bold">Recipe Suggestions</h1>
+          <Link 
+            href="/protected" 
+            className="ml-auto flex items-center px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg border border-gray-200 shadow-sm transition-colors group"
+          >
+            <LayoutDashboard size={18} className="mr-2 text-gray-500 group-hover:text-orange-500" />
+            <span>Profile Dashboard</span>
+          </Link>
         </div>
         
         <p className="text-gray-600 mb-6">
@@ -200,6 +283,30 @@ export default function RecipesPage() {
                       </a>
                     ))}
                   </div>
+                </div>
+
+                <div className="pt-4 border-t border-gray-200">
+                  <button
+                    onClick={() => handleCookRecipe(recipe)}
+                    disabled={!!cookingRecipe}
+                    className={`w-full px-4 py-2.5 rounded-lg flex items-center justify-center space-x-2 transition-colors ${
+                      cookingRecipe === recipe.name
+                        ? 'bg-neutral-100 text-neutral-500 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-sm'
+                    }`}
+                  >
+                    {cookingRecipe === recipe.name ? (
+                      <>
+                        <Loader2 size={18} className="animate-spin" />
+                        <span className="font-medium">Processing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle size={18} className="flex-shrink-0" />
+                        <span className="font-medium">I Cooked This Recipe</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             </div>

@@ -35,7 +35,11 @@ export const signUpAction = async (formData: FormData) => {
   const userId = data?.user?.id;  
   if (userId) {
     
-    await supabase.from("user_profiles").insert([{ user_id: userId, form_submitted: false }]);
+    await supabase.from("user_profiles").insert([{ 
+      user_id: userId, 
+      form_submitted: false,
+      email: email 
+    }]);
   }
   return encodedRedirect(
       "success",

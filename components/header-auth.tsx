@@ -10,30 +10,34 @@ export default function HeaderAuth() {
   const [email, setEmail] = useState<string | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const supabase = createClient();
 
   useEffect(() => {
-    const checkUser = async () => {
-      setIsLoading(true);
-      const supabase = createClient();
-      const { data, error } = await supabase.auth.getUser();
+    setIsLoading(true);
+    
+    // Get initial auth state
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setEmail(session?.user?.email || null);
       setIsLoading(false);
-      if (error || !data?.user) {
-        setEmail(null);
-        return;
-      }
-      
-      // Handle the case where email might be undefined
-      setEmail(data.user.email || null);
-    };
+    });
 
-    checkUser();
+    // Subscribe to auth state changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setEmail(session?.user?.email || null);
+      setIsLoading(false);
+    });
+
+    // Cleanup subscription
+    return () => subscription.unsubscribe();
   }, []);
 
   const signOut = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
     setEmail(null);
-    router.push("/sign-in");
+    router.push("/");
   };
 
   const toggleDropdown = () => {
@@ -82,6 +86,13 @@ export default function HeaderAuth() {
                 onClick={() => setIsDropdownOpen(false)}
               >
                 Recipes
+              </Link>
+              <Link 
+                href="/protected/forum" 
+                className="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                onClick={() => setIsDropdownOpen(false)}
+              >
+                Forum
               </Link>
               <button 
                 onClick={() => {

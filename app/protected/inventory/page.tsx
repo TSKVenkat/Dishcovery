@@ -6,6 +6,7 @@ import Link from 'next/link';
 import InventoryTable from '@/components/InventoryTable';
 import AddItemModal from '@/components/AddItemModal';
 import { Item } from '@/types';
+import { LayoutDashboard } from 'lucide-react';
 
 enum FilterType {
   ALL = 'All',
@@ -110,7 +111,16 @@ export default function Inventory() {
   return (
     <div className="container mx-auto px-4 py-8">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold mb-4">Food Inventory</h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-3xl font-bold">Food Inventory</h1>
+          <Link 
+            href="/protected" 
+            className="flex items-center px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg border border-gray-200 shadow-sm transition-colors group"
+          >
+            <LayoutDashboard size={18} className="mr-2 text-gray-500 group-hover:text-orange-500" />
+            <span>Profile Dashboard</span>
+          </Link>
+        </div>
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-wrap gap-2">
