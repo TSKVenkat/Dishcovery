@@ -14,13 +14,13 @@ interface LeaderboardEntry {
 const getRankIcon = (rank: number) => {
   switch (rank) {
     case 1:
-      return <Trophy className="text-yellow-500" size={24} />;
+      return <Trophy className="text-yellow-500" size={20} />;
     case 2:
-      return <Medal className="text-gray-400" size={24} />;
+      return <Medal className="text-gray-400" size={20} />;
     case 3:
-      return <Medal className="text-amber-600" size={24} />;
+      return <Medal className="text-amber-600" size={20} />;
     default:
-      return <Award className="text-blue-400" size={20} />;
+      return <Award className="text-blue-400" size={16} />;
   }
 };
 
@@ -72,12 +72,12 @@ export default function Leaderboard() {
 
   if (isLoading) {
     return (
-      <div className="bg-card/50 backdrop-blur-sm rounded-lg p-6 border border-border/50">
+      <div className="bg-card/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-border/50">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-1/3"></div>
+          <div className="h-6 sm:h-8 bg-muted rounded w-1/3"></div>
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-12 bg-muted rounded"></div>
+              <div key={i} className="h-10 sm:h-12 bg-muted rounded"></div>
             ))}
           </div>
         </div>
@@ -87,13 +87,52 @@ export default function Leaderboard() {
 
   return (
     <div className="bg-card/50 backdrop-blur-sm rounded-lg overflow-hidden border border-border/50">
-      <div className="p-6">
-        <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
-          <Trophy className="text-yellow-500" size={28} />
+      <div className="p-4 sm:p-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
+          <Trophy className="text-yellow-500 w-5 h-5 sm:w-7 sm:h-7" />
           Cooking Champions
         </h2>
         
-        <div className="overflow-x-auto">
+        {/* Mobile View */}
+        <div className="sm:hidden space-y-3">
+          {leaderboardData.map((entry) => (
+            <div 
+              key={entry.rank}
+              className="bg-card/30 backdrop-blur-sm p-3 rounded-lg border border-border/50 hover:border-primary/30 transition-colors"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className={`
+                    inline-flex items-center justify-center w-6 h-6 rounded-full font-semibold text-xs
+                    ${entry.rank === 1 ? 'bg-yellow-100/80 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300' : 
+                      entry.rank === 2 ? 'bg-gray-100/80 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300' :
+                      entry.rank === 3 ? 'bg-amber-100/80 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300' :
+                      'bg-blue-100/80 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300'} 
+                  `}>
+                    #{entry.rank}
+                  </span>
+                  <span className="text-sm font-medium text-foreground truncate max-w-[120px]">
+                    {entry.email}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">
+                    {entry.successful_cooks} cooks
+                  </span>
+                  {getRankIcon(entry.rank)}
+                </div>
+              </div>
+              <div className="text-xs font-medium">
+                <span className={`${getRankTitleColor(entry.rank_title)}`}>
+                  {entry.rank_title}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop View */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-border/50">
