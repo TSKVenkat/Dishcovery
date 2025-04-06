@@ -1,3 +1,4 @@
+'use client';
 import { signInAction } from "@/app/actions";
 import { FormMessage, Message } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
@@ -5,9 +6,43 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AtSign, Lock } from "lucide-react";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
-export default async function Login(props: { searchParams: Promise<Message> }) {
-  const searchParams = await props.searchParams;
+export default function Login() {
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (redirectUrl && isRedirecting) {
+      const timer = setTimeout(() => {
+        window.location.href = redirectUrl;
+      }, 1000); // Increased delay to 1 second
+      return () => clearTimeout(timer);
+    }
+  }, [redirectUrl, isRedirecting]);
+
+  const handleSubmit = async (formData: FormData) => {
+    const result = await signInAction(formData);
+    
+    if (result && 'clientSide' in result) {
+      setIsRedirecting(true);
+      setRedirectUrl(result.redirect);
+      return;
+    }
+  };
+
+  if (isRedirecting) {
+    return (
+      <div className="fixed inset-0 bg-background flex items-center justify-center" style={{ zIndex: 9999 }}>
+        <div className="text-center p-8 rounded-lg bg-background shadow-lg">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-foreground mb-2">Signing you in...</h2>
+          <p className="text-muted-foreground">Please wait while we redirect you</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col items-center justify-center w-full max-w-md px-6 py-8">
       <div className="text-center mb-6">
@@ -32,7 +67,7 @@ export default async function Login(props: { searchParams: Promise<Message> }) {
         <p className="text-neutral-600 dark:text-neutral-400 mt-2">Sign in to manage your food inventory</p>
       </div>
       
-      <form className="w-full bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-lg border border-neutral-200 dark:border-neutral-700">
+      <form action={handleSubmit} className="w-full bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-lg border border-neutral-200 dark:border-neutral-700">
         <div className="flex flex-col gap-4">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-neutral-700 dark:text-neutral-300">Email</Label>
@@ -77,13 +112,10 @@ export default async function Login(props: { searchParams: Promise<Message> }) {
           
           <SubmitButton 
             pendingText="Signing In..." 
-            formAction={signInAction}
             className="w-full bg-primary-600 hover:bg-primary-700 text-white py-2.5 rounded-lg transition-colors mt-2"
           >
             Sign in
           </SubmitButton>
-          
-          <FormMessage message={searchParams} />
           
           <div className="text-center mt-4">
             <p className="text-neutral-600 dark:text-neutral-400 text-sm">

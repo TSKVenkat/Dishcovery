@@ -54,7 +54,7 @@ export const signInAction = async (formData: FormData) => {
   const password = formData.get("password") as string;
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
@@ -63,25 +63,21 @@ export const signInAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
-  // After successful login, fetch the user session to confirm authentication
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  
-  if (sessionError || !session) {
+  if (!data?.user) {
     return encodedRedirect("error", "/sign-in", "Authentication failed");
   }
 
-  const userId = session.user.id;
-  const {data:selectdata,error:selecterror}=await supabase.from("user_profiles").select("form_submitted").eq("user_id", userId).single();
+  const {data:selectdata,error:selecterror}=await supabase.from("user_profiles").select("form_submitted").eq("user_id", data.user.id).single();
   
   if(selecterror){
     return encodedRedirect("error", "/sign-in", "Error fetching user profile");
   }
   
-  if(!selectdata?.form_submitted){
-    return redirect("/protected/form");
-  }
-
-  return redirect("/protected");
+  // Return an object that tells the client to redirect
+  return {
+    redirect: !selectdata?.form_submitted ? "/protected/form" : "/protected",
+    clientSide: true
+  };
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {

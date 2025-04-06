@@ -1,5 +1,5 @@
 import { EnvVarWarning } from "@/components/env-var-warning";
-import HeaderAuth from "@/components/header-auth";
+import HeaderAuthWrapper from "@/components/header-auth-wrapper";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/utils/supabase/check-env-vars";
 import { ThemeProvider } from "next-themes";
@@ -58,7 +58,7 @@ export default function RootLayout({
                 </div>
                 
                 <div className="flex items-center gap-4">
-                  {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />}
+                  {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuthWrapper />}
                   <ThemeSwitcher />
                 </div>
               </div>

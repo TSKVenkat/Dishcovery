@@ -5,44 +5,79 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut, User, ChevronDown } from "lucide-react";
 
-export default function HeaderAuth() {
+interface HeaderAuthProps {
+  initialEmail: string | null;
+}
+
+export default function HeaderAuth({ initialEmail }: HeaderAuthProps) {
+  console.log('[Client] Component rendered with initialEmail:', initialEmail);
+  
   const router = useRouter();
-  const [email, setEmail] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(initialEmail);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
-    setIsLoading(true);
-    
-    // Get initial auth state
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setEmail(session?.user?.email || null);
-      setIsLoading(false);
+    // If no initialEmail, try to get user data directly
+    if (!initialEmail) {
+      const checkUser = async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user?.email) {
+            console.log('[Client] Found user after getUser():', user.email);
+            setEmail(user.email);
+          }
+        } catch (error) {
+          console.error('[Client] Error checking user:', error);
+        }
+      };
+      checkUser();
+    }
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[Client] Auth event:', event, session?.user?.email);
+      if (event === 'SIGNED_IN') {
+        setEmail(session?.user?.email || null);
+        router.refresh();
+      } else if (event === 'SIGNED_OUT') {
+        setEmail(null);
+        router.refresh();
+      }
     });
 
-    // Subscribe to auth state changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setEmail(session?.user?.email || null);
-      setIsLoading(false);
-    });
-
-    // Cleanup subscription
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      console.log('[Client] Cleaning up auth listener');
+      subscription.unsubscribe();
+    };
+  }, [router, supabase, initialEmail]);
 
   const signOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    setEmail(null);
-    router.push("/");
+    setIsLoading(true);
+    try {
+      console.log('[Client] Starting sign out process');
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      console.log('[Client] Sign out successful, clearing state');
+      setEmail(null);
+      setIsDropdownOpen(false);
+      
+      // Force a hard refresh to ensure all auth state is cleared
+      window.location.href = '/';
+    } catch (error) {
+      console.error('[Client] Error signing out:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
+
+  console.log('[Client] Current email state:', email);
 
   if (isLoading) {
     return (
@@ -95,10 +130,7 @@ export default function HeaderAuth() {
                 Forum
               </Link>
               <button 
-                onClick={() => {
-                  signOut();
-                  setIsDropdownOpen(false);
-                }}
+                onClick={signOut}
                 className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-lg"
               >
                 <LogOut size={16} className="mr-2" />

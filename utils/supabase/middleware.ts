@@ -5,8 +5,8 @@ export const updateSession = async (request: NextRequest) => {
   // This `try/catch` block is only here for the interactive tutorial.
   // Feel free to remove once you have Supabase connected.
   try {
-    // Create an unmodified response
-    let response = NextResponse.next({
+    // Create a response with the CORS headers
+    const response = NextResponse.next({
       request: {
         headers: request.headers,
       },
@@ -17,27 +17,38 @@ export const updateSession = async (request: NextRequest) => {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          getAll() {
-            return request.cookies.getAll();
+          get(name: string) {
+            return request.cookies.get(name)?.value;
           },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value }) =>
-              request.cookies.set(name, value),
-            );
-            response = NextResponse.next({
-              request,
+          set(name: string, value: string, options: any) {
+            // Set cookie on both request and response
+            request.cookies.set({
+              name,
+              value,
+              ...options,
             });
-            cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options),
-            );
+            response.cookies.set({
+              name,
+              value,
+              ...options,
+            });
+          },
+          remove(name: string, options: any) {
+            // Remove cookie from both request and response
+            request.cookies.delete(name);
+            response.cookies.delete(name);
           },
         },
-      },
+      }
     );
 
-    // This will refresh session if expired - required for Server Components
-    // https://supabase.com/docs/guides/auth/server-side/nextjs
-    const { data: { session } } = await supabase.auth.getSession();
+    // Refresh the session and get the user
+    const { data: { session }, error } = await supabase.auth.getSession();
+
+    if (error) {
+      console.error('[Middleware] Session error:', error);
+      return response;
+    }
 
     // Auth-related pages should redirect to protected route if user is logged in
     const authPages = ['/sign-in', '/sign-up', '/forgot-password'];
@@ -57,6 +68,7 @@ export const updateSession = async (request: NextRequest) => {
 
     return response;
   } catch (e) {
+    console.error('[Middleware] Error:', e);
     // If you are here, a Supabase client could not be created!
     // This is likely because you have not set up environment variables.
     // Check out http://localhost:3000 for Next Steps.
